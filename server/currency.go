@@ -1,31 +1,31 @@
 package server
 
 import (
+	data "CurrencyMicroservice/data"
 	pb "CurrencyMicroservice/protos/currency"
 	"context"
 	"github.com/hashicorp/go-hclog"
-	"google.golang.org/grpc"
 	"io"
 	"time"
 )
 
-type Currency struct {
+type CurrencyServerApi struct {
 	log hclog.Logger
 	pb.UnimplementedCurrencyServer
+	rates *data.ExchangeRates
 }
 
-type CurrencySubscribeRatesServer struct {
-	log hclog.Logger
-	grpc.ServerStream
+func NewCurrencyServerApi(l hclog.Logger) *CurrencyServerApi {
+	return &CurrencyServerApi{log: l}
 }
 
-func (c *Currency) GetRate(ctx context.Context, rateReq *pb.RateRequest) (*pb.RateResponse, error) {
+func (c *CurrencyServerApi) GetRate(ctx context.Context, rateReq *pb.RateRequest) (*pb.RateResponse, error) {
 	c.log.Info("Getting the Rate", rateReq)
 
 	return &pb.RateResponse{Rate: 0.5}, nil
 }
 
-func (c *Currency) SubscribeRates(src pb.Currency_SubscribeRatesServer) error {
+func (c *CurrencyServerApi) SubscribeRates(src pb.Currency_SubscribeRatesServer) error {
 
 	// Client streaming request (blocking method, use goroutines)
 	go func() {
@@ -57,8 +57,4 @@ func (c *Currency) SubscribeRates(src pb.Currency_SubscribeRatesServer) error {
 
 		time.Sleep(3 * time.Second)
 	}
-}
-
-func NewCurrency(l hclog.Logger) *Currency {
-	return &Currency{log: l}
 }

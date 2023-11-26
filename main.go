@@ -16,7 +16,7 @@ func main() {
 	// Creates default logger instance
 	log := hclog.Default()
 
-	exchangeRates, err := data.NewRates(log)
+	rates, err := data.NewRates(log)
 
 	if err != nil {
 		os.Exit(1)
@@ -24,7 +24,7 @@ func main() {
 
 	base := "USD"
 	dest := "ISK"
-	convRate, err := exchangeRates.GetRate(base, dest)
+	convRate, err := rates.GetRate(base, dest)
 
 	if err != nil {
 		fmt.Println("Cannot convert rate for base", base, "and dest", dest, "error=", err)
@@ -36,7 +36,7 @@ func main() {
 	// Create new empty grpc server
 	grpcServer := grpc.NewServer()
 	// Creates a server side api for Currency service (contains all server side methods)
-	currencyServerApi := server.NewCurrencyServerApi(log)
+	currencyServerApi := server.NewCurrencyServerApi(rates, log)
 	// Register service with the grpc server (so when request hits grpc server it will know which service method to call)
 	pb.RegisterCurrencyServer(grpcServer, currencyServerApi)
 	// Enable grpcurl using reflection api
